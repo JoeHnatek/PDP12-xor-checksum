@@ -102,7 +102,7 @@ def print_addr_intruct(converted_addr: list, converted_instruct: list, addresses
     print(f"===== Addresses and Instructions =====")
     print("{:<11} {:<10} {:<12} {}".format("Address", "Instruction", "bAddress", "bInsturction"))    # Magic number formating :)
     for x in range(len(converted_addr)):    # For each address, output its respective data
-        print(f"{converted_addr[x]:<12}{converted_instruct[x]:<12}{addresses[x]:<12} {instructions[x]}")
+        print(f"{converted_addr[x]:<11} {converted_instruct[x]:<11} {addresses[x]:<12} {instructions[x]}")
 
 def printStats(filepath: str, decimal: int, binary: str, octal: str):
     print(f"===== Checksum for {filepath} =====")

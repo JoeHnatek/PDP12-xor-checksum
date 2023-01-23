@@ -27,41 +27,43 @@ import sys
 import os
 
 PAD = b'\x80'   # Padding byte
-LOC = b'\x40'   # start Line Of Coding
 
 def get_data(filepath: str) -> list:
     """
     Opens filepath in read-binary mode
-    Read 2 bytes at a time (12bit words)
-    Skip LOC and PAD bytes.
+    Read 1 byte at a time
+    Adds data to address or instructions list (RIM format)
     """
+
     intruction_data = []
     addr_data = []
-    with open(filepath, mode="rb") as f:    # Open file in binary read mode
-            while(word := f.read(2)):   # Read word by word
-                if(PAD not in word):    # Ignore padding
-                    if LOC in word:
-                        addr = ''
-                        for e in word:
-                            # Convert hex to binary,
-                            # Strip python bin prefix 0b
-                            # Fill left most bits with 0 to ensure a length of 8
-                            # Strip meta-data bits 7 & 8
-                            addr += bin(e)[2:].zfill(8)[2:]
-                        addr_data.append(addr)
-                        
-                    else:
-                        binary_value = ''
-                        for e in word:
-                            # Convert hex to binary,
-                            # Strip python bin prefix 0b
-                            # Fill left most bits with 0 to ensure a length of 8
-                            # Strip meta-data bits 7 & 8
-                            binary_value += bin(e)[2:].zfill(8)[2:]
-                        intruction_data.append(binary_value)
-                        
+    data = []
+    count = 0
+    word_bin = ''
 
-    return addr_data, intruction_data
+    with open(filepath, mode="rb") as f:
+        while(word := f.read(1)):
+            if PAD not in word:
+                for e in word:
+                    # Convert hex to binary,
+                    # Strip python bin prefix 0b
+                    # Fill left most bits with 0 to ensure a length of 8
+                    # Strip meta-data bits 7 & 8
+                    word_bin += bin(e)[2:].zfill(8)[2:]
+                count += 1
+
+                if count == 2:
+                    data.append(word_bin)
+                    word_bin = ''
+                    count = 0
+
+    for x in range(len(data)):
+        if x % 2 == 0:  # Evens = addresses
+            addr_data.append(data[x])
+        else:
+            intruction_data.append(data[x])
+
+    return addr_data, intruction_data            
 
 def xor(data: list) -> int:
     """
@@ -140,7 +142,4 @@ if __name__ == '__main__':
 
     ext = filepath[-3:]
 
-    if ext.lower() == 'rim':
-        main(filepath)
-    else:
-        raise Exception(f"{filepath} is not in the proper format (.rim)")
+    main(filepath)
